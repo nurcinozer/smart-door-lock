@@ -15,7 +15,7 @@ function HomeScreen() {
 function DetailsScreen() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Text>Details Screen</Text>
+      <Text>Details Screen is here</Text>
     </View>
   );
 }
