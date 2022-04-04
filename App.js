@@ -1,10 +1,8 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, ScrollView, Pressable } from "react-native";
+import { StyleSheet, Text, View, ScrollView } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { ThemeProvider, createTheme } from "@rneui/themed";
-import { ListItem, Avatar, Icon, Button } from "@rneui/themed";
+import { ListItem, Avatar, Button } from "@rneui/themed";
 
 const list = [
   {
@@ -123,6 +121,19 @@ export default function App() {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          tabBarIcon: ({ color, size }) => {
+            let iconName;
+
+            if (route.name === "Home") {
+              iconName = "home-outline"
+            } else if (route.name === "AccessLog") {
+              iconName = "key-outline";
+            } else if (route.name === "ShareKey") {
+              iconName = "share-social-outline"
+            }
+
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
           tabBarActiveTintColor: "tomato",
           tabBarInactiveTintColor: "gray",
         })}
