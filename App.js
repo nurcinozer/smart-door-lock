@@ -87,7 +87,7 @@ function HomeScreen() {
           source={{ uri: "https://i.pravatar.cc/400" }}
         />
         <Text style={{ padding: 10, fontWeight: "bold" }}>
-          last access 7.46AM by Eylul
+          last access 7.46AM by Mahmut
         </Text>
         <Text style={{ fontWeight: "bold" }}>door was unlocked</Text>
       </View>
