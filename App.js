@@ -11,10 +11,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ListItem, Avatar, Button } from "@rneui/themed";
-import { Input } from "react-native-elements";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
-import { auth } from "./firebase";
+import { auth, firestore } from "./firebase";
 
 const list = [
   {
@@ -121,6 +120,7 @@ function ProfileScreen({ navigation }) {
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -132,12 +132,17 @@ function LoginScreen({ navigation }) {
     return unsubscribe;
   }, []);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     auth
       .createUserWithEmailAndPassword(email, password)
       .then((userCredentials) => {
         const user = userCredentials.user;
         console.log("Registered with:", user.email);
+        return firestore.collection("users").doc(userCredentials.uid).set({
+          displayName: displayName,
+          email: email,
+          createdAt: new Date().toUTCString(),
+        });
       })
       .catch((error) => alert(error.message));
   };
@@ -159,6 +164,12 @@ function LoginScreen({ navigation }) {
           placeholder="Email"
           value={email}
           onChangeText={(text) => setEmail(text)}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Display Name"
+          value={displayName}
+          onChangeText={(text) => setDisplayName(text)}
           style={styles.input}
         />
         <TextInput
@@ -223,18 +234,41 @@ function LoginScreen({ navigation }) {
 // }
 
 function AccessLogScreen() {
+  const [info, setInfo] = useState([]);
+
+  useEffect(() => {
+    Fetchdata();
+  }, []);
+
+  // Fetch the required data using the get() method
+  const Fetchdata = () => {
+    firestore.collection("users")
+      .get()
+      .then((querySnapshot) => {
+        // Loop through the data and store
+        // it in array to display
+        querySnapshot.forEach((element) => {
+          var data = element.data();
+          setInfo((arr) => [...arr, data]);
+        });
+      });
+  };
+  
   return (
     <View style={{ flex: 1, justifyContent: "center" }}>
       <ScrollView>
-        {list.map((l, i) => (
-          <ListItem key={i} bottomDivider>
-            <Avatar source={{ uri: l.avatar_url }} />
-            <ListItem.Content>
-              <ListItem.Title>{l.name}</ListItem.Title>
-              <ListItem.Subtitle>{l.date}</ListItem.Subtitle>
-            </ListItem.Content>
-          </ListItem>
-        ))}
+        {info && info.length > 0 && 
+          info.map((log) => {
+            return (
+              <ListItem key={log.uid} bottomDivider>
+                {/* <Avatar source={{ uri: l.avatar_url }} /> */}
+                <ListItem.Content>
+                  <ListItem.Title>{log.displayName}</ListItem.Title>
+                  <ListItem.Subtitle>{log.createdAt}</ListItem.Subtitle>
+                </ListItem.Content>
+              </ListItem>
+            );
+          })}
       </ScrollView>
     </View>
   );
@@ -319,7 +353,7 @@ const styles = StyleSheet.create({
     marginRight: 20,
   },
   inputContainer: {
-    width: '80%'
+    width: "80%",
   },
   input: {
     paddingHorizontal: 15,
@@ -328,32 +362,32 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   buttonContainer: {
-    width: '60%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: "60%",
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 40,
   },
   button: {
-    backgroundColor: '#0782F9',
-    width: '100%',
+    backgroundColor: "#0782F9",
+    width: "100%",
     padding: 15,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonOutline: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginTop: 5,
-    borderColor: '#0782F9',
+    borderColor: "#0782F9",
     borderWidth: 2,
   },
   buttonText: {
-    color: 'white',
-    fontWeight: '700',
+    color: "white",
+    fontWeight: "700",
     fontSize: 16,
   },
   buttonOutlineText: {
-    color: '#0782F9',
-    fontWeight: '700',
+    color: "#0782F9",
+    fontWeight: "700",
     fontSize: 16,
   },
 });
