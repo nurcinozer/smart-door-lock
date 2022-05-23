@@ -4,6 +4,8 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  TextInput,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -11,6 +13,8 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { ListItem, Avatar, Button } from "@rneui/themed";
 import { Input } from "react-native-elements";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useEffect, useState } from "react";
+import { auth } from "./firebase";
 
 const list = [
   {
@@ -96,126 +100,127 @@ function HomeScreen() {
 }
 
 function ProfileScreen({ navigation }) {
+  const handleSignOut = () => {
+    auth
+      .signOut()
+      .then(() => {
+        navigation.replace("Login");
+      })
+      .catch((error) => alert(error.message));
+  };
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "normal",
-          textAlign: "center",
-          lineHeight: 24,
-          marginBottom: 50,
-        }}
-      >
-        The easiest way to lock/unlock door with this amazing application.
-      </Text>
-      <View>
-        <Button
-          title="Login"
-          buttonStyle={{
-            borderColor: "rgba(78, 116, 289, 1)",
-            backgroundColor: "rgba(78, 116, 289, 1)",
-          }}
-          type="outline"
-          titleStyle={{ color: "white" }}
-          containerStyle={{
-            width: 200,
-            marginHorizontal: 50,
-            marginVertical: 10,
-          }}
-          onPress={() => navigation.navigate("Login")}
-        />
-        <Button
-          title="Register"
-          buttonStyle={{
-            borderColor: "rgba(78, 116, 289, 1)",
-          }}
-          type="outline"
-          titleStyle={{ color: "rgba(78, 116, 289, 1)" }}
-          containerStyle={{
-            width: 200,
-            marginHorizontal: 50,
-            marginVertical: 10,
-          }}
-          onPress={() => navigation.navigate("Register")}
-        />
-      </View>
+    <View style={styles.container}>
+      <Text>Email: {auth.currentUser?.email}</Text>
+      <TouchableOpacity onPress={handleSignOut} style={styles.button}>
+        <Text style={styles.buttonText}>Sign out</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
-function LoginScreen() {
+function LoginScreen({ navigation }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        navigation.replace("ProfilePage");
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const handleSignUp = () => {
+    auth
+      .createUserWithEmailAndPassword(email, password)
+      .then((userCredentials) => {
+        const user = userCredentials.user;
+        console.log("Registered with:", user.email);
+      })
+      .catch((error) => alert(error.message));
+  };
+
+  const handleLogin = () => {
+    auth
+      .signInWithEmailAndPassword(email, password)
+      .then((userCredentials) => {
+        const user = userCredentials.user;
+        console.log("Logged in with:", user.email);
+      })
+      .catch((error) => alert(error.message));
+  };
+
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Input placeholder="Email" />
-      <Input placeholder="Password" secureTextEntry={true} />
-      <View style={styles.forgotPassword}>
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <View style={styles.inputContainer}>
+        <TextInput
+          placeholder="Email"
+          value={email}
+          onChangeText={(text) => setEmail(text)}
+          style={styles.input}
+        />
+        <TextInput
+          placeholder="Password"
+          value={password}
+          onChangeText={(text) => setPassword(text)}
+          style={styles.input}
+          secureTextEntry
+        />
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={handleLogin} style={styles.button}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
         <TouchableOpacity
-        // onPress={() => navigation.navigate('ResetPasswordScreen')}
+          onPress={handleSignUp}
+          style={[styles.button, styles.buttonOutline]}
         >
-          <Text style={styles.forgot}>Forgot your password?</Text>
+          <Text style={styles.buttonOutlineText}>Register</Text>
         </TouchableOpacity>
       </View>
-      <Button
-        title="Login"
-        buttonStyle={{
-          borderColor: "rgba(78, 116, 289, 1)",
-          backgroundColor: "rgba(78, 116, 289, 1)",
-        }}
-        type="outline"
-        titleStyle={{ color: "white" }}
-        containerStyle={{
-          width: 200,
-          marginHorizontal: 50,
-          marginVertical: 10,
-        }}
-      />
-      <View style={styles.row}>
-        <Text>Don’t have an account? </Text>
-        <TouchableOpacity>
-          <Text style={styles.link}>Sign up</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
-function RegisterScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Input placeholder="Name" />
-      <Input placeholder="Email" />
-      <Input placeholder="Password" secureTextEntry={true} />
-      <View style={styles.forgotPassword}>
-        <TouchableOpacity
-        // onPress={() => navigation.navigate('ResetPasswordScreen')}
-        >
-          <Text style={styles.forgot}>Forgot your password?</Text>
-        </TouchableOpacity>
-      </View>
-      <Button
-        title="Register"
-        buttonStyle={{
-          borderColor: "rgba(78, 116, 289, 1)",
-        }}
-        type="outline"
-        titleStyle={{ color: "rgba(78, 116, 289, 1)" }}
-        containerStyle={{
-          width: 200,
-          marginHorizontal: 50,
-          marginVertical: 10,
-        }}
-        onPress={() => navigation.navigate("Register")}
-      />
-      <View style={styles.row}>
-        <Text>Already have an account? </Text>
-        <TouchableOpacity>
-          <Text style={styles.link}>Login</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+// function RegisterScreen() {
+//   return (
+//     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+//       <Input placeholder="Name" />
+//       <Input placeholder="Email" />
+//       <Input placeholder="Password" secureTextEntry={true} />
+//       <View style={styles.forgotPassword}>
+//         <TouchableOpacity
+//         // onPress={() => navigation.navigate('ResetPasswordScreen')}
+//         >
+//           <Text style={styles.forgot}>Forgot your password?</Text>
+//         </TouchableOpacity>
+//       </View>
+//       <Button
+//         title="Register"
+//         buttonStyle={{
+//           borderColor: "rgba(78, 116, 289, 1)",
+//         }}
+//         type="outline"
+//         titleStyle={{ color: "rgba(78, 116, 289, 1)" }}
+//         containerStyle={{
+//           width: 200,
+//           marginHorizontal: 50,
+//           marginVertical: 10,
+//         }}
+//         onPress={() => navigation.navigate("Register")}
+//       />
+//       <View style={styles.row}>
+//         <Text>Already have an account? </Text>
+//         <TouchableOpacity>
+//           <Text style={styles.link}>Login</Text>
+//         </TouchableOpacity>
+//       </View>
+//     </View>
+//   );
+// }
 
 function AccessLogScreen() {
   return (
@@ -251,9 +256,8 @@ function ProfileStackScreen() {
     <ProfileStack.Navigator
       screenOptions={{ headerShown: false, headerBackVisible: true }}
     >
-      <ProfileStack.Screen name="Profile" component={ProfileScreen} />
       <ProfileStack.Screen name="Login" component={LoginScreen} />
-      <ProfileStack.Screen name="Register" component={RegisterScreen} />
+      <ProfileStack.Screen name="ProfilePage" component={ProfileScreen} />
     </ProfileStack.Navigator>
   );
 }
@@ -313,5 +317,43 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
     marginBottom: 24,
     marginRight: 20,
+  },
+  inputContainer: {
+    width: '80%'
+  },
+  input: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 5,
+  },
+  buttonContainer: {
+    width: '60%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  button: {
+    backgroundColor: '#0782F9',
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  buttonOutline: {
+    backgroundColor: 'white',
+    marginTop: 5,
+    borderColor: '#0782F9',
+    borderWidth: 2,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  buttonOutlineText: {
+    color: '#0782F9',
+    fontWeight: '700',
+    fontSize: 16,
   },
 });
