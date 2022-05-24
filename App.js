@@ -12,8 +12,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ListItem, Avatar, Button } from "@rneui/themed";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { auth, firestore } from "./firebase";
+import firebase from "./firebase";
+import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 
 const list = [
   {
@@ -109,10 +111,12 @@ function ProfileScreen({ navigation }) {
   };
   return (
     <View style={styles.container}>
-      <Text>Email: {auth.currentUser?.email}</Text>
-      <TouchableOpacity onPress={handleSignOut} style={styles.button}>
-        <Text style={styles.buttonText}>Sign out</Text>
-      </TouchableOpacity>
+      <View style={styles.inputContainer}>
+        <Text>Email: {auth.currentUser?.email}</Text>
+        <TouchableOpacity onPress={handleSignOut} style={styles.button}>
+          <Text style={styles.buttonText}>Sign out</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -242,7 +246,8 @@ function AccessLogScreen() {
 
   // Fetch the required data using the get() method
   const Fetchdata = () => {
-    firestore.collection("users")
+    firestore
+      .collection("users")
       .get()
       .then((querySnapshot) => {
         // Loop through the data and store
@@ -253,11 +258,12 @@ function AccessLogScreen() {
         });
       });
   };
-  
+
   return (
     <View style={{ flex: 1, justifyContent: "center" }}>
       <ScrollView>
-        {info && info.length > 0 && 
+        {info &&
+          info.length > 0 &&
           info.map((log) => {
             return (
               <ListItem key={log.uid} bottomDivider>
@@ -274,11 +280,80 @@ function AccessLogScreen() {
   );
 }
 function ShareKeyScreen() {
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [code, setCode] = useState("");
+  const [verificationId, setVerificationId] = useState(null);
+  const recaptchaVerifier = useRef(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const sendVerification = () => {
+    const phoneProvider = new firebase.auth.PhoneAuthProvider();
+    phoneProvider
+      .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
+      .then(setVerificationId);
+  };
+
+  // const confirmCode = () => {
+  //   const credential = firebase.auth.PhoneAuthProvider.credential(
+  //     verificationId,
+  //     code
+  //   );
+  //   auth.signInWithCredential(credential).then((result) => {
+  //     // Do something with the results here
+  //     console.log(result);
+  //   });
+  // };
+
+
   return (
     <View
       style={{ flex: 1, justifyContent: "space-around", alignItems: "center" }}
     >
-      <Button title="share key" style={styless.button} />
+      {isLoggedIn && (
+        <View style={styles.inputContainer}>
+          <FirebaseRecaptchaVerifierModal
+            ref={recaptchaVerifier}
+            firebaseConfig={firebase.app().options}
+            attemptInvisibleVerification={true}
+          />
+          {/* Phone Number Input */}
+          <TextInput
+            placeholder="Phone Number"
+            onChangeText={setPhoneNumber}
+            keyboardType="phone-pad"
+            autoCompleteType="tel"
+            style={styles.input}
+          />
+          <TouchableOpacity onPress={sendVerification} style={styles.button}>
+            <Text style={styles.buttonText}>Share Key</Text>
+          </TouchableOpacity>
+          {/* Verification Code Input */}
+          {/* <TextInput
+          placeholder="Confirmation Code"
+          onChangeText={setCode}
+          keyboardType="number-pad"
+          style={styles.input}
+        />
+        <TouchableOpacity onPress={confirmCode}>
+          <Text>Send Verification</Text>
+        </TouchableOpacity> */}
+        </View>
+      )}
+      {!isLoggedIn && (
+        <Text>You should login or register to share key</Text>
+      )}
     </View>
   );
 }
@@ -334,7 +409,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -360,6 +434,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
     marginTop: 5,
+    marginBottom: 20,
+    backgroundColor: "#fff",
   },
   buttonContainer: {
     width: "60%",
@@ -373,6 +449,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
+    marginTop: 20,
   },
   buttonOutline: {
     backgroundColor: "white",
