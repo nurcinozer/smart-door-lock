@@ -112,7 +112,8 @@ function ProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
-        <Text>Email: {auth.currentUser?.email}</Text>
+        {auth.currentUser?.email && (<Text>Email: {auth.currentUser?.email}</Text>)}
+        {auth.currentUser?.phoneNumber && (<Text>Phone Number: {auth.currentUser?.phoneNumber}</Text>)}
         <TouchableOpacity onPress={handleSignOut} style={styles.button}>
           <Text style={styles.buttonText}>Sign out</Text>
         </TouchableOpacity>
@@ -195,8 +196,48 @@ function LoginScreen({ navigation }) {
         >
           <Text style={styles.buttonOutlineText}>Register</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("LoginWithCode")}
+          style={[styles.button, styles.buttonOutline]}
+        >
+          <Text style={styles.buttonOutlineText}>Login with Access Code</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+  );
+}
+
+function LoginWithCodeScreen({ navigation }) {
+  const [code, setCode] = useState("");
+
+  const confirmCode = () => {
+    const credential = firebase.auth.PhoneAuthProvider.credential(
+      "AJOnW4RYF_1spolFUYh5tSstOGEC-PEPwkroN7lilK-8IZkySnSAOKL1TDSBwJLCvvdOUShek1GRsbfLXK1jDVHGjNxk2q1wTQPBW52lNVKVUG7G8m32CcM19MKC29o9vM9IpTnpOa7fnUGpsuLmrlJJN_TdivBDkuwsVgCa_mbdf-BIDIe3xl5iKDYa8k70Zg3CvSLZhhOfCnRHOBVqh2jxgojcW9O_9V3Ey_G10Q4_TziEIgIb-wE",
+      code
+    );
+    auth.signInWithCredential(credential).then((result) => {
+      // Do something with the results here
+      console.log(result);
+      navigation.replace("Login");
+    });
+  };
+  return (
+    <View
+      style={{ flex: 1, justifyContent: "space-around", alignItems: "center" }}
+    >
+      <View style={styles.inputContainer}>
+        {/* Verification Code Input */}
+        <TextInput
+          placeholder="Confirmation Code"
+          onChangeText={setCode}
+          keyboardType="number-pad"
+          style={styles.input}
+        />
+        <TouchableOpacity onPress={confirmCode} style={styles.button}>
+          <Text style={styles.buttonText}>Send Verification</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -241,11 +282,6 @@ function AccessLogScreen() {
   const [info, setInfo] = useState([]);
 
   useEffect(() => {
-    Fetchdata();
-  }, []);
-
-  // Fetch the required data using the get() method
-  const Fetchdata = () => {
     firestore
       .collection("users")
       .get()
@@ -257,7 +293,7 @@ function AccessLogScreen() {
           setInfo((arr) => [...arr, data]);
         });
       });
-  };
+  }, []);
 
   return (
     <View style={{ flex: 1, justifyContent: "center" }}>
@@ -267,7 +303,7 @@ function AccessLogScreen() {
           info.map((log) => {
             return (
               <ListItem key={log.uid} bottomDivider>
-                {/* <Avatar source={{ uri: l.avatar_url }} /> */}
+                <Avatar source={{ uri: "https://gravatar.com/avatar/8a41c8482a1875f91bd972a6210432dc?s=400&d=robohash&r=x" }} />
                 <ListItem.Content>
                   <ListItem.Title>{log.displayName}</ListItem.Title>
                   <ListItem.Subtitle>{log.createdAt}</ListItem.Subtitle>
@@ -280,9 +316,8 @@ function AccessLogScreen() {
   );
 }
 function ShareKeyScreen() {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [code, setCode] = useState("");
   const [verificationId, setVerificationId] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const recaptchaVerifier = useRef(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -315,7 +350,6 @@ function ShareKeyScreen() {
   //     console.log(result);
   //   });
   // };
-
 
   return (
     <View
@@ -351,9 +385,7 @@ function ShareKeyScreen() {
         </TouchableOpacity> */}
         </View>
       )}
-      {!isLoggedIn && (
-        <Text>You should login or register to share key</Text>
-      )}
+      {!isLoggedIn && <Text>You should login or register to share key</Text>}
     </View>
   );
 }
@@ -366,6 +398,10 @@ function ProfileStackScreen() {
       screenOptions={{ headerShown: false, headerBackVisible: true }}
     >
       <ProfileStack.Screen name="Login" component={LoginScreen} />
+      <ProfileStack.Screen
+        name="LoginWithCode"
+        component={LoginWithCodeScreen}
+      />
       <ProfileStack.Screen name="ProfilePage" component={ProfileScreen} />
     </ProfileStack.Navigator>
   );
