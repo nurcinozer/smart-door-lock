@@ -11,6 +11,7 @@ import { auth, firestore } from "../firebase";
 import { useEffect, useState } from "react";
 import firebase from "../firebase";
 import { styles1 } from "../constants";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileStack = createNativeStackNavigator();
 
@@ -149,9 +150,10 @@ function LoginScreen({ navigation }) {
 function LoginWithCodeScreen({ navigation }) {
   const [code, setCode] = useState("");
 
-  const confirmCode = () => {
+  const confirmCode = async () => {
+    const value = await AsyncStorage.getItem('token');
     const credential = firebase.auth.PhoneAuthProvider.credential(
-      "AJOnW4RYF_1spolFUYh5tSstOGEC-PEPwkroN7lilK-8IZkySnSAOKL1TDSBwJLCvvdOUShek1GRsbfLXK1jDVHGjNxk2q1wTQPBW52lNVKVUG7G8m32CcM19MKC29o9vM9IpTnpOa7fnUGpsuLmrlJJN_TdivBDkuwsVgCa_mbdf-BIDIe3xl5iKDYa8k70Zg3CvSLZhhOfCnRHOBVqh2jxgojcW9O_9V3Ey_G10Q4_TziEIgIb-wE",
+      JSON.parse(value),
       code
     );
     auth.signInWithCredential(credential).then((result) => {

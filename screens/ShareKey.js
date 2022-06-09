@@ -11,6 +11,7 @@ import { useState, useRef, useEffect } from "react";
 import { SIZES, styles1, styles2 } from "../constants";
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import firebase from "firebase";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ShareKey = () => {
   const [verificationId, setVerificationId] = useState(null);
@@ -35,6 +36,9 @@ const ShareKey = () => {
     phoneProvider
       .verifyPhoneNumber(phoneNumber, recaptchaVerifier.current)
       .then(setVerificationId);
+      console.log(JSON.stringify(verificationId));
+      AsyncStorage.setItem('token', JSON.stringify(verificationId))
+      // AJOnW4TEPrObVvYN41FJ36hFytPfY9XkmPAFShXD2PN9kR9DsNb-y9LQV1Pwz9EDw5inrSKgXhV6XLSzXF5rv-5nkrZn8surf5C4GZQm5SAbxwD3j0_qNvpg0E5sSdfzzBNJf0aabT0FHSPc-c1AepgjkN0bpW1v9WBqZltTyBcRLtrd7fL3RUjWK1FPEbBKCroD_sXRPVwaoDXli8CbC0i2OIeZ6-wU1w10H7bbTzytEjdLtDOy7KY
   };
 
   // const confirmCode = () => {
