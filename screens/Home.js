@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import { COLORS, SIZES, assets, styles1, styles2 } from "../constants";
 import { Avatar } from "@rneui/themed";
 
 const Home = ({ navigation }) => {
+  const [lock, setLock] = useState(false);
+
   return (
     <View
       style={{
@@ -64,15 +66,16 @@ const Home = ({ navigation }) => {
                 justifyContent: "space-around",
                 alignItems: "center",
               }}
+              onPress={() => setLock(!lock)}
             >
-              <Image source={require("../assets/icons/unlock.png")} />
+              {lock ? (<Image source={require("../assets/icons/lock.png")} />) : (<Image source={require("../assets/icons/unlock.png")} />)}
               <Text
                 style={{
                   fontSize: 18,
                   fontWeight: "bold",
                 }}
               >
-                Lock
+                {lock ? "Unlock" : "Lock"}
               </Text>
             </TouchableOpacity>
           </View>
