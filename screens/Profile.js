@@ -152,6 +152,7 @@ function LoginWithCodeScreen({ navigation }) {
 
   const confirmCode = async () => {
     const value = await AsyncStorage.getItem('token');
+    console.log(value);
     const credential = firebase.auth.PhoneAuthProvider.credential(
       JSON.parse(value),
       code
