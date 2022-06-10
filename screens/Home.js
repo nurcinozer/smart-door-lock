@@ -7,14 +7,17 @@ import {
   Button,
   ImageBackground,
   Image,
+  Modal,
 } from "react-native";
 import { COLORS, SIZES, assets, styles1, styles2 } from "../constants";
 import { Avatar } from "@rneui/themed";
 import { auth } from "../firebase";
+import BluetoothList from "./BluetoothList";
 
 const Home = ({ navigation }) => {
   const [lock, setLock] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -55,6 +58,7 @@ const Home = ({ navigation }) => {
               textAlign: "left",
               width: "100%",
               left: 10,
+              top: 35,
               fontSize: SIZES.extraLarge,
               fontWeight: "bold",
             }}
@@ -68,6 +72,34 @@ const Home = ({ navigation }) => {
                 alignItems: "center",
               }}
             >
+              <View
+                style={{
+                  width: "100%",
+                  alignItems: "flex-end",
+                  bottom: 30,
+                }}
+              >
+                <TouchableOpacity onPress={() => setModalOpen(true)}>
+                  <Image source={require("../assets/icons/bluetooth.png")} />
+                </TouchableOpacity>
+              </View>
+              <Modal visible={modalOpen} animationType="slide">
+                <View
+                  style={{
+                    top: 50,
+                    display: "flex",
+                    alignItems: "flex-end",
+                    right: 20,
+                  }}
+                >
+                  <TouchableOpacity onPress={() => setModalOpen(false)}>
+                    <Image source={require("../assets/icons/close.png")} />
+                  </TouchableOpacity>
+                </View>
+                <View>
+                  <BluetoothList />
+                </View>
+              </Modal>
               <View>
                 <TouchableOpacity
                   style={{
@@ -100,7 +132,11 @@ const Home = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
               <View
-                style={{ flexDirection: "row", alignItems: "center", marginTop: 50}}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginTop: 50,
+                }}
               >
                 <Avatar
                   size="medium"
@@ -113,7 +149,7 @@ const Home = ({ navigation }) => {
                   }}
                 >
                   <Text style={{ fontWeight: "bold" }}>
-                    last access 7.46AM by bilgesu
+                    last access 7.46AM by yigit
                   </Text>
                   <Text style={{ fontWeight: "bold" }}>door was unlocked</Text>
                 </View>
