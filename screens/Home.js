@@ -59,7 +59,7 @@ const Home = ({ navigation }) => {
               fontWeight: "bold",
             }}
           >
-            Home
+            Lock/Unlock Door
           </Text>
           {isLoggedIn && (
             <View
@@ -121,7 +121,7 @@ const Home = ({ navigation }) => {
             </View>
           )}
           {!isLoggedIn && (
-            <Text>You should login or register to share key</Text>
+            <Text>You should login or register to lock/unlock door</Text>
           )}
         </View>
       </ImageBackground>
