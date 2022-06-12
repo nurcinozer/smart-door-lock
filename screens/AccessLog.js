@@ -56,9 +56,9 @@ const AccessLog = ({ navigation }) => {
           >
             {info &&
               info.length > 0 &&
-              info.map((log) => {
+              info.map((log, index) => {
                 return (
-                  <ListItem key={log.uid} bottomDivider>
+                  <ListItem key={index} bottomDivider>
                     <Avatar
                       source={{
                         uri: "https://gravatar.com/avatar/8a41c8482a1875f91bd972a6210432dc?s=400&d=robohash&r=x",
